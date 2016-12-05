@@ -17,9 +17,19 @@ perl ./video-split.pl <source file> <config file>
 Config File
 ===========
 
-The config file is in JSON format, and contains an array of objects. 
+The config file is in JSON format, and contains an object.
 
-## Parameters
+## Top Level Parameters
+
+### audio
+
+Default audio settings.
+
+### clips
+
+Specifies the clip specifications.
+
+## Clip Parameters
 
 ### filename
 
@@ -56,7 +66,7 @@ Here's a sample, used in the very first [builderscon tokyo 2016](https://builder
 
 ```json
 {
-  "audio": "highpass=f=170, lowpass=f=6000, bandreject=f=2000:width_type=h:w=999, bandreject=f=800:width_type=h:w=200, bandreject=f=450:width_type=h:w=150, bandreject=f=220:width_type=h:w=50, dynaudnorm",
+  "audio": "highpass=f=170, lowpass=f=3500, bandreject=f=2000:width_type=h:w=999, bandreject=f=800:width_type=h:w=200, bandreject=f=450:width_type=h:w=150, bandreject=f=220:width_type=h:w=50",
   "clips": [
     { "filename": "A_1000_lestrrat.mov", "start": "00:46:38", "end": "00:54:09" },
     { "filename": "A_1010_mattn.mov", "start": "00:56:35", "end": "01:48:44" },
