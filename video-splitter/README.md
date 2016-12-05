@@ -55,32 +55,35 @@ this probably needs to be changed in the future. Please submit a PR.
 Here's a sample, used in the very first [builderscon tokyo 2016](https://builderscon.tokyo/builderscon/tokyo/2016):
 
 ```json
-[
-  { "filename": "A_1000_lestrrat.mov", "start": "00:46:38", "end": "00:54:09" },
-  { "filename": "A_1010_mattn.mov", "start": "00:56:35", "end": "01:48:44" },
-  { "filename": "A_1120_uzulla.mov", "start": "02:06:41", "end": "03:19:00" },
-  { "filename": "A_1310_miyake_youichiro.mov", "start": "03:56:54", "end": "04:57:44",
-    "cropblur": {
-      "width": 840,
-      "height": 640,
-      "x": 120,
-      "y": 75,
-      "between": [
-        { "start": "00:05:10", "end": "00:05:52" },
-        { "start": "00:07:28", "end": "00:07:57" },
-        { "start": "00:24:28", "end": "00:25:06" },
-        { "start": "00:25:11", "end": "00:26:59" },
-        { "start": "00:39:36", "end": "00:39:55" },
-        { "start": "00:39:59", "end": "00:40:17" },
-        { "start": "00:40:22", "end": "00:40:41" },
-        { "start": "00:58:59", "end": "00:59:15" },
-        { "start": "00:59:20", "end": "01:00:35" }
-      ]
-    }
-  },
-  { "filename": "A_1420_mumoshu.mov", "start": "05:06:40", "end": "06:07:11" },
-  { "filename": "A_1530_kazsato.mov", "start": "06:16:37", "end": "06:46:31" },
-  { "filename": "A_1600_shibayu.mov", "start": "06:48:09", "end": "07:18:32" },
-  { "filename": "A_1640_cho45.mov", "start": "07:27:44", "end": "08:26:48" }
-]
+{
+  "audio": "highpass=f=170, lowpass=f=6000, bandreject=f=2000:width_type=h:w=999, bandreject=f=800:width_type=h:w=200, bandreject=f=450:width_type=h:w=150, bandreject=f=220:width_type=h:w=50, dynaudnorm",
+  "clips": [
+    { "filename": "A_1000_lestrrat.mov", "start": "00:46:38", "end": "00:54:09" },
+    { "filename": "A_1010_mattn.mov", "start": "00:56:35", "end": "01:48:44" },
+    { "filename": "A_1120_uzulla.mov", "start": "02:06:41", "end": "03:19:00" },
+    { "filename": "A_1310_miyake_youichiro.mov", "start": "03:56:54", "end": "04:57:44",
+      "cropblur": {
+        "width": 840,
+        "height": 640,
+        "x": 120,
+        "y": 75,
+        "between": [
+          { "start": "00:05:10", "end": "00:05:52" },
+          { "start": "00:07:28", "end": "00:07:57" },
+          { "start": "00:24:28", "end": "00:25:06" },
+          { "start": "00:25:11", "end": "00:26:59" },
+          { "start": "00:39:36", "end": "00:39:55" },
+          { "start": "00:39:59", "end": "00:40:17" },
+          { "start": "00:40:22", "end": "00:40:41" },
+          { "start": "00:58:59", "end": "00:59:15" },
+          { "start": "00:59:20", "end": "01:00:35" }
+        ]
+      }
+    },
+    { "filename": "A_1420_mumoshu.mov", "start": "05:06:40", "end": "06:07:11" },
+    { "filename": "A_1530_kazsato.mov", "start": "06:16:37", "end": "06:46:31" },
+    { "filename": "A_1600_shibayu.mov", "start": "06:48:09", "end": "07:18:32" },
+    { "filename": "A_1640_cho45.mov", "start": "07:27:44", "end": "08:26:48" }
+  ]
+}
 ```

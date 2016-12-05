@@ -4,8 +4,9 @@ use JSON ();
 my ($src, $fn) = @ARGV;
 
 my $config = JSON::decode_json(do{ open my $fh, '<', $fn; local $/; <$fh> });
+my $audio_default = $config->{audio} || "highpass=f=500, lowpass=f=4000, dynaudnorm, volume=2dB";
 
-for my $data (@$config) {
+for my $data (@{$config->{clips}}) {
     my @cmd = qw(ffmpeg -y);
     my $start_sec = to_sec($data->{start});
     my $end_sec   = to_sec($data->{end});
@@ -20,9 +21,8 @@ for my $data (@$config) {
             $cb_data->{width}, $cb_data->{height}, $cb_data->{x}, $cb_data->{y}
         );
 
-
         if (my $t_data = $cb_data->{between}) {
-            $filter .= ":enable='"
+            $filter .= ":enable='";
             my @between;
             for my $between (@$t_data) {
                 push @between, sprintf("between(t,%d,%d)", to_sec($between->{start}), to_sec($between->{end}))
@@ -39,7 +39,9 @@ for my $data (@$config) {
     } else {
         push @cmd, qw(-c:v copy);
     }
-    push @cmd, qw(-filter_complex), "highpass=f=500, lowpass=f=4000, dynaudnorm, volume=2dB";
+
+    my $audio = $data->{audio};
+    push @cmd, qw(-filter_complex), $audio || $audio_default;
     push @cmd, $data->{filename};
     system(@cmd);
 }
