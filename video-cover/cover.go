@@ -1,11 +1,18 @@
 package cover
 
 import (
+	"context"
+	"encoding/csv"
 	"image"
 	"image/draw"
 	"image/jpeg"
+	"image/png"
+	"io"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/disintegration/imaging"
 	"github.com/golang/freetype"
@@ -14,10 +21,11 @@ import (
 )
 
 type Text struct {
-	Speaker    string
-	Title      string
-	Conference string
-	Date       string
+	Speaker       string
+	Title         string
+	TitleFontSize float64
+	Conference    string
+	Date          string
 }
 
 const fontFile = "/Users/daisuke/Library/Fonts/migmix-1m-bold.ttf"
@@ -32,14 +40,27 @@ func init() {
 	}
 }
 
-func LoadImage(path string) (*image.RGBA, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, errors.Wrap(err, `failed to load image`)
-	}
-	defer f.Close()
+func LoadImage(path string) (draw.Image, error) {
+	var rdr io.Reader
+	if strings.HasPrefix(path, "http") {
+		res, err := http.Get(path)
+		if err != nil {
+			return nil, errors.Wrap(err, `failed to fetch image`)
+		}
+		defer res.Body.Close()
 
-	img, err := jpeg.Decode(f)
+		rdr = res.Body
+	} else {
+
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, errors.Wrap(err, `failed to load image`)
+		}
+		defer f.Close()
+		rdr = f
+	}
+
+	img, err := jpeg.Decode(rdr)
 	if err != nil {
 		return nil, errors.Wrap(err, `failed to decode image`)
 	}
@@ -73,22 +94,24 @@ func GetThumbnail(id string) (*image.RGBA, error) {
 	return rgba, nil
 }
 
-func WriteText(base *image.RGBA, txt *Text) error {
+func WriteText(base draw.Image, txt *Text) error {
+	bounds := base.Bounds()
 	fc := freetype.NewContext()
 	fc.SetDPI(300)
 	fc.SetFont(typefont)
-	fc.SetFontSize(21)
-	fc.SetClip(base.Bounds())
+	fc.SetClip(bounds)
 	fc.SetDst(base)
 	fc.SetSrc(image.White)
 
 	pt := freetype.Pt(10, 100)
 
-	fc.DrawString(txt.Title, pt)
-	pt.Y += fc.PointToFixed(11 * 1.8)
+	fc.SetFontSize(txt.TitleFontSize)
+	for _, l := range strings.Split(txt.Title, "\n") {
+		fc.DrawString(l, pt)
+		pt.Y += fc.PointToFixed(11 * 1.8)
+	}
 
 	// For these, start from botoom
-	bounds := base.Bounds()
 	pt = freetype.Pt(10, bounds.Dy())
 	pt.Y -= fc.PointToFixed(6)
 
@@ -102,5 +125,74 @@ func WriteText(base *image.RGBA, txt *Text) error {
 	pt.Y -= fc.PointToFixed(10)
 	fc.SetFontSize(10)
 	fc.DrawString(txt.Speaker, pt)
+	return nil
+}
+
+func Run(ctx context.Context, src io.Reader) error {
+	rdr := csv.NewReader(src)
+	rdr.Comma = '\t'
+
+	for {
+		record, err := rdr.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return errors.Wrap(err, `failed to read TSV`)
+		}
+
+		if len(record[0]) == 0 {
+			continue
+		}
+
+		img, err := LoadImage(record[0])
+		if err != nil {
+			return errors.Wrap(err, `failed to get image`)
+		}
+
+		// left 40% of the image is going to be used for our text
+		textarea := image.Rect(0, 0, int(float64(img.Bounds().Dx())*0.4), img.Bounds().Dy())
+
+		// Create a new canvas to write the text
+		canvas := image.NewAlpha(textarea)
+
+		var txt Text
+		txt.Title = strings.Replace(record[1], "\\n", "\n", -1)
+		log.Printf("%s", txt.Title)
+		ftsize, err := strconv.Atoi(record[2])
+		if err != nil {
+			return errors.Wrap(err, `failed to parse font size`)
+		}
+		txt.TitleFontSize = float64(ftsize)
+		txt.Conference = record[3]
+		txt.Date = record[4]
+		txt.Speaker = record[5]
+
+		if err := WriteText(canvas, &txt); err != nil {
+			return errors.Wrap(err, `failed to write text`)
+		}
+
+		tf, err := os.Create(`textarea.png`)
+		if err != nil {
+			return errors.Wrap(err, `failed to create tf file`)
+		}
+		defer tf.Close()
+		if err := png.Encode(tf, canvas); err != nil {
+			return errors.Wrap(err, `failed to encode jpeg`)
+		}
+
+		// Draw the canvas to the image
+		fitimg := imaging.Fit(canvas, textarea.Dx(), textarea.Dy(), imaging.Lanczos)
+		draw.DrawMask(img, textarea, fitimg, image.ZP, nil, image.ZP, draw.Over)
+
+		f, err := os.Create(record[6])
+		if err != nil {
+			return errors.Wrap(err, `failed to create file`)
+		}
+		defer f.Close()
+		if err := jpeg.Encode(f, img, nil); err != nil {
+			return errors.Wrap(err, `failed to encode jpeg`)
+		}
+	}
 	return nil
 }

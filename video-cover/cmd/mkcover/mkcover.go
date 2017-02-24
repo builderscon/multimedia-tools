@@ -1,11 +1,13 @@
 package main
 
 import (
-	"image/jpeg"
+	"context"
+	"io"
 	"log"
 	"os"
 
 	cover "github.com/builderscon/multimedia-tools/video-cover"
+	tty "github.com/builderscon/multimedia-tools/video-cover/internal/tty"
 	"github.com/pkg/errors"
 )
 
@@ -17,25 +19,24 @@ func main() {
 }
 
 func _main() error {
-	img, err := cover.LoadImage(os.Args[1])
-	if err != nil {
-		return errors.Wrap(err, `failed to get image`)
+	var src io.Reader
+	if len(os.Args) > 1 {
+log.Printf("Using file %s", os.Args[1])
+		f, err := os.Open(os.Args[1])
+		if err != nil {
+			return errors.Wrapf(err, `failed to open file for reading: %s`, os.Args[1])
+		}
+		defer f.Close()
+		src = f
+	} else if tty.IsTty(os.Stdin) {
+log.Printf("Using os.Stdin")
+		src = os.Stdin
+	} else {
+		return errors.New("No input data available")
 	}
 
-	var txt cover.Text
-	txt.Title = "Opening"
-	txt.Conference = "builderscon tokyo 2016"
-	txt.Date = "Dec 3, 2016"
-	txt.Speaker = "Daisuke Maki"
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	if err := cover.WriteText(img, &txt); err != nil {
-		return errors.Wrap(err, `failed to write text`)
-	}
-
-	f, err := os.Create(`out.jpeg`)
-	if err != nil {
-		return errors.Wrap(err, `failed to create file`)
-	}
-	defer f.Close()
-	return jpeg.Encode(f, img, nil)
+	return cover.Run(ctx, src)
 }
