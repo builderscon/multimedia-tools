@@ -172,15 +172,6 @@ func Run(ctx context.Context, src io.Reader) error {
 			return errors.Wrap(err, `failed to write text`)
 		}
 
-		tf, err := os.Create(`textarea.png`)
-		if err != nil {
-			return errors.Wrap(err, `failed to create tf file`)
-		}
-		defer tf.Close()
-		if err := png.Encode(tf, canvas); err != nil {
-			return errors.Wrap(err, `failed to encode jpeg`)
-		}
-
 		// Draw the canvas to the image
 		fitimg := imaging.Fit(canvas, textarea.Dx(), textarea.Dy(), imaging.Lanczos)
 		draw.DrawMask(img, textarea, fitimg, image.ZP, nil, image.ZP, draw.Over)
