@@ -130,7 +130,6 @@ function onDownload() {
     return;
   }
 
-  debugger;
   var zip = new JSZip();
   var imgzip = zip.folder('images');
   var data = JSON.parse(str);
