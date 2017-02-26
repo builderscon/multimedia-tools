@@ -195,7 +195,9 @@ function buildTable() {
       tr.appendChild(td);
       var inp = document.createElement('input');
       inp.name = key;
-      inp.value = a[key];
+      if (a[key]) {
+        inp.value = a[key];
+      }
       td.appendChild(inp);
     });
   });
@@ -276,9 +278,13 @@ function fetchConferenceData(id) {
       var sessions = json
         .filter(a => a.video_url)
         .map(a => {
+          var name = a.speaker.nickname;
+          if (a.speaker.first_name && a.speaker.last_name && a.speaker.first_name != 'Unknown' && a.speaker.last_name != 'Unknown') {
+            name = a.speaker.first_name + " " + a.speaker.last_name;
+          }
           return {
             title: a.title,
-            name: a.speaker.first_name || a.speaker.nickname,
+            name: name,
           }
         })
 
