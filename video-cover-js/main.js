@@ -36,6 +36,20 @@ function drawBackground(ctx, img) {
   ctx.restore()
 }
 
+function drawWatermark(ctx, img) {
+  // hardcoded 200x200 image
+  var watermark = document.getElementById('watermark');
+  var scale = ctx.canvas.width/img.originalWidth;
+  ctx.save();
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  // This is weird shit, but the height of the canvas != image height,
+  // so in order to calculate 205px above bottom right corner, we need
+  // to scale *BACK* the canvas height then subtract 205. This result is
+  // then converted via the above setTransform into the appropriate canvas size
+  ctx.drawImage(watermark, img.originalWidth - 205, (ctx.canvas.height / scale) - 205);
+  ctx.restore()
+}
+
 function drawShadow(ctx) {
   var grd = ctx.createLinearGradient(coverWidth/4, 0, coverWidth/2, 0);
   grd.addColorStop(0, 'rgba(0,0,0,1)');
@@ -59,12 +73,12 @@ function drawTitle(ctx, title, fontSize) {
 }
 
 function drawMeta(ctx, name, conference, date) {
-  ctx.font = "bold 32px " + fontName;
-  ctx.fillText(name || 'mattn', 15, coverHeight - 90);
+  ctx.font = "bold 60px " + fontName;
+  ctx.fillText(name || 'mattn', 15, coverHeight - 120);
 
-  ctx.font = "bold 24px " + fontName;
-  ctx.fillText(conference || 'builderscon tokyo 2016', 15, coverHeight - 48);
-  ctx.fillText(date || 'Dec 3, 2016', 15, coverHeight - 24);
+  ctx.font = "bold 32px " + fontName;
+  ctx.fillText(conference || 'builderscon tokyo 2016', 15, coverHeight - 60);
+  ctx.fillText(date || 'Dec 3, 2016', 15, coverHeight - 30);
 }
 
 function doCanvas(canvas, img, title, name, fontSize, conference, date) {
@@ -76,6 +90,7 @@ function doCanvas(canvas, img, title, name, fontSize, conference, date) {
   drawShadow(ctx);
   drawTitle(ctx, title, fontSize);
   drawMeta(ctx, name, conference, date);
+  drawWatermark(ctx, img);
 }
 
 // Event
@@ -259,8 +274,8 @@ function buildThumbnails() {
     images.push(img);
 
     var li = document.createElement('li');
-    canvas.width = 640;
-    canvas.height = 360;
+    canvas.width = 960;
+    canvas.height = 540;
     li.appendChild(canvas);
     ul.appendChild(li);
   })
