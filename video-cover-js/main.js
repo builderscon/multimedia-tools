@@ -2,6 +2,7 @@
 // var conferenceId = 'fdd2e7aa-b234-4aac-bfb1-e58cb334e8a7'
 var images = [];
 
+var baseFontSize = 60;
 var coverWidth = 1280;
 var coverHeight = 720;
 var fontName = "'Mplus 1p'";
@@ -17,7 +18,7 @@ var fonts = [
   "'Noto Sans Japanese'",
 ];
 var metaKeys = ['title', 'subTitle'];
-var sessionKeys = ['image', 'title', 'name'];
+var sessionKeys = ['image', 'title', 'name', 'fontSize'];
 var storageKey = 'data'
 
 // Canvas
@@ -43,7 +44,7 @@ function drawShadow(ctx) {
   ctx.fillRect(0, 0, coverWidth, coverHeight);
 }
 
-function drawTitle(ctx, title) {
+function drawTitle(ctx, title, fontSize) {
   if (!title) {
     return;
   }
@@ -51,9 +52,9 @@ function drawTitle(ctx, title) {
   ctx.fillStyle = '#fff';
   var text = '';
   var lines = title.split("\\n");
-  ctx.font = 'bold 40px ' + fontName;
+  ctx.font = 'bold ' + fontSize + 'px ' + fontName;
   for (var i = 0; i < lines.length; i++) {
-    ctx.fillText(lines[i], 10, 120 + 50 * i, coverWidth/4);
+    ctx.fillText(lines[i], 10, 120 + ((fontSize - baseFontSize) *1.5 + 50) * i, coverWidth/2);
   }
 }
 
@@ -66,14 +67,14 @@ function drawMeta(ctx, name, conference, date) {
   ctx.fillText(date || 'Dec 3, 2016', 15, coverHeight - 24);
 }
 
-function doCanvas(canvas, img, title, name, conference, date) {
+function doCanvas(canvas, img, title, name, fontSize, conference, date) {
   var ctx = canvas.getContext('2d');
   drawBackground(ctx, img);
 
   var scale = canvas.width/coverWidth;
   ctx.scale(scale, scale);
   drawShadow(ctx);
-  drawTitle(ctx, title);
+  drawTitle(ctx, title, fontSize);
   drawMeta(ctx, name, conference, date);
 }
 
@@ -129,7 +130,7 @@ function onDownload() {
     var canvas = document.createElement('canvas');
     canvas.width = coverWidth;
     canvas.height = coverHeight;
-    doCanvas(canvas, img, a.title, a.name, data.meta.title,  data.meta.subTitle);
+    doCanvas(canvas, img, a.title, a.name, a.fontSize, data.meta.title,  data.meta.subTitle);
     var imgData = canvas.toDataURL('image/jpg')
     imgzip.file(a.title + '.jpg', imgData.split(',')[1], {base64: true});
   });
@@ -251,7 +252,7 @@ function buildThumbnails() {
     });
     img.onload = function() {
       img.originalWidth = img.width;
-      doCanvas(canvas, img, a.title, a.name, data.meta.title, data.meta.subTitle);
+      doCanvas(canvas, img, a.title, a.name, a.fontSize, data.meta.title, data.meta.subTitle);
     }
     img.setAttribute('crossOrigin', 'anonymous');
     img.src = a.image;
@@ -285,6 +286,7 @@ function fetchConferenceData(id) {
           return {
             title: a.title,
             name: name,
+            fontSize: baseFontSize
           }
         })
 
