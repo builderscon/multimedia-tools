@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Builderscon multimedia-tools video-cover.js</title>
+    <style>
+  body {
+    font-family: 'Mplus 1p';
+    width: 100vw;
+    height: 100vh;
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+  }
+  canvas {
+    display: block;
+    border:1px solid #000;
+    margin: 0px auto;
+  }
+
+  #toolbar {
+    flex-shrink: 0;
+    flex-basis: 40px;
+    display: flex;
+    color: white;
+  }
+
+  #toolbar > div {
+    flex-grow: 1;
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #f90;
+    border-right: 1px solid lightgray;
+  }
+
+  #toolbar > div.is-selected {
+    background-color: lightgray;
+  }
+
+  #main {
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #settings_thumbnail ul {
+    list-style: none;
+    padding-left: 0px;
+  }
+
+  #settings_thumbnail li {
+    display: inline-block;
+  }
+
+  #settings_thumbnail img {
+    width: 200px;
+  }
+
+  .page {
+    display: none;
+    margin: 0px;
+    padding: 10px;
+  }
+
+  .is-visible {
+    display: block;
+  }
+    </style>
+
+    <!-- Web FONTS -->
+    <link href="https://fonts.googleapis.com/earlyaccess/mplus1p.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/roundedmplus1c.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/hannari.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/kokoro.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/sawarabimincho.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/sawarabigothic.css" rel="stylesheet" />    <link href="https://fonts.googleapis.com/earlyaccess/nikukyu.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/nicomoji.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/earlyaccess/notosansjapanese.css" rel="stylesheet" />
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="toolbar">
+      <div id="on_show_table">
+        <i class="fa fa-list"></i><br>
+        Table
+      </div>
+      <div id="on_show_thumbnail">
+        <i class="fa fa-table"></i><br>
+        Thumbnail (refresh)
+      </div>
+      <div id="on_download">
+        <i class="fa fa-download"></i><br>
+        Download
+      </div>
+    </div>
+
+    <div id="main">
+      <div>
+        <input id="conference_id" type="text" placeholder="conference id">
+        <button id="on_fetch">Fetch</button>
+        OR
+        <input type="file" accept=".tsv" disabled /> <!-- not implemented -->
+        |
+        FONT: <select id="fonts"></select>
+      </div>
+      <hr>
+      <div id="settings_table" class="page"> </div>
+      <div id="settings_thumbnail" class="page"> </div>
+    </div>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
+    <script type="text/javascript" src="./main.js"></script>
+  </body>
+</html>
