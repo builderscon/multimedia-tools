@@ -54,7 +54,7 @@ function drawTitle(ctx, title, fontSize) {
   var lines = title.split("\\n");
   ctx.font = 'bold ' + fontSize + 'px ' + fontName;
   for (var i = 0; i < lines.length; i++) {
-    ctx.fillText(lines[i], 10, 120 + ((fontSize - baseFontSize) *1.5 + 50) * i, coverWidth/2);
+    ctx.fillText(lines[i], 10, 120 + ((fontSize - baseFontSize + 20) *1.5 + 50) * i, coverWidth/2);
   }
 }
 
