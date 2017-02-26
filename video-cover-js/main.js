@@ -74,11 +74,11 @@ function drawTitle(ctx, title, fontSize) {
 
 function drawMeta(ctx, name, conference, date) {
   ctx.font = "bold 60px " + fontName;
-  ctx.fillText(name || 'mattn', 15, coverHeight - 120);
+  ctx.fillText(name || 'mattn', 15, coverHeight - 150);
 
-  ctx.font = "bold 32px " + fontName;
-  ctx.fillText(conference || 'builderscon tokyo 2016', 15, coverHeight - 60);
-  ctx.fillText(date || 'Dec 3, 2016', 15, coverHeight - 30);
+  ctx.font = "bold 48px " + fontName;
+  ctx.fillText(conference || 'builderscon tokyo 2016', 15, coverHeight - 80);
+  ctx.fillText(date || 'Dec 3, 2016', 15, coverHeight - 35);
 }
 
 function doCanvas(canvas, img, title, name, fontSize, conference, date) {
