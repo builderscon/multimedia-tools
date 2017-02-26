@@ -19,7 +19,8 @@ var fonts = [
 ];
 var metaKeys = ['title', 'subTitle'];
 var sessionKeys = ['image', 'title', 'name', 'fontSize'];
-var storageKey = 'data'
+var storageKey = 'data';
+var previewEnabled = false;
 
 // Canvas
 
@@ -74,7 +75,7 @@ function drawTitle(ctx, title, fontSize) {
 
 function drawMeta(ctx, name, conference, date) {
   ctx.font = "bold 60px " + fontName;
-  ctx.fillText(name || 'mattn', 15, coverHeight - 150);
+  ctx.fillText(name || 'NAME', 15, coverHeight - 150);
 
   ctx.font = "bold 40px " + fontName;
   ctx.fillText(conference || 'builderscon tokyo 2016', 15, coverHeight - 80);
@@ -110,6 +111,66 @@ function onChangeFont(ev) {
     setTimeout(_ => {
       buildThumbnails();
     }, 800);
+  }
+}
+
+function onChangeInput(ev) {
+  var collectValues = () => {
+    var div = document.getElementById('settings_table');
+    var table = div.querySelector('table');
+    var sessions = [];
+    table.querySelectorAll('.session').forEach(s => {
+      var session = {}
+      s.querySelectorAll('input').forEach(inp => {
+        session[inp.name] = inp.value;
+      });
+      sessions.push(session);
+    });
+
+    var data = {
+      meta: {},
+      sessions: sessions
+    }
+
+    metaKeys.forEach(key => {
+      var inp = div.querySelector('input[name=' + key + ']');
+      data.meta[key] = inp.value;
+    });
+
+    return data
+  }
+
+  // update localStorage using table values
+  var data = collectValues()
+  localStorage.setItem(storageKey, JSON.stringify(data));
+
+  // preview cover
+  if (!previewEnabled) {
+    return
+  }
+  var row = ev.target.parentNode.parentNode;
+  if (!row.classList.contains('session')) {
+    return
+  }
+
+  var table = ev.target.parentNode.parentNode.parentNode;
+  var preview = document.getElementById('cover_preview');
+  table.insertBefore(preview, row.nextSibling);
+  preview.classList.add('is-preview');
+
+  // draw preview canvas
+  var canvas = preview.querySelector('canvas');
+  var s = {}
+  row.querySelectorAll('input').forEach(inp => {
+    s[inp.name] = inp.value;
+  });
+  var img = images.find(a => a.src === s.image);
+  if (img) {
+    doCanvas(canvas, img, s.title, s.name, s.fontSize, data.conference, data.date);
+  } else {
+    fetchImage(s.image, img => {
+      doCanvas(canvas, img, s.title, s.name, s.fontSize, data.conference, data.date);
+    });
   }
 }
 
@@ -187,11 +248,29 @@ function buildTable() {
     div.appendChild(inp);
   });
 
-  var h4 = document.createElement('h4')
+  var h4 = document.createElement('h4');
   h4.innerHTML = 'Sessions';
   div.appendChild(h4);
+  // To enable preview
+  var chbox = document.createElement('input');
+  chbox.id = 'enable_preview_check_box';
+  chbox.type = 'checkbox';
+  chbox.checked = previewEnabled;
+  chbox.addEventListener('change', ev =>{
+    previewEnabled = ev.target.checked
+    if (!previewEnabled) {
+      document.getElementById('cover_preview').remove('is-preview');
+    }
+  });
+  div.appendChild(chbox);
+  var label = document.createElement('label');
+  label.innerHTML = 'Enable preview';
+  label.htmlFor = chbox.id;
+  div.appendChild(label);
+
   var table = document.createElement('table');
   div.appendChild(table);
+  // table header
   var tr = document.createElement('tr');
   table.appendChild(tr);
   sessionKeys.forEach(a => {
@@ -199,6 +278,20 @@ function buildTable() {
     th.innerHTML = a;
     tr.appendChild(th);
   })
+  // cover preview
+  var tr = document.createElement('tr');
+  tr.id = 'cover_preview';
+  if (previewEnabled) {
+    tr.classList.add('is-preview');
+  }
+  table.appendChild(tr);
+  var td = document.createElement('td');
+  td.colSpan = sessionKeys.length;
+  tr.appendChild(td);
+  var canvas = document.createElement('canvas');
+  canvas.width = coverWidth;
+  canvas.height = coverHeight;
+  td.appendChild(canvas);
 
   data.sessions.forEach(a => {
     var tr = document.createElement('tr');
@@ -217,29 +310,8 @@ function buildTable() {
     });
   });
 
-  div.querySelectorAll('input').forEach(a => {
-    a.addEventListener('input', () => {
-      var sessions = [];
-      table.querySelectorAll('.session').forEach(s => {
-        var session = {}
-        s.querySelectorAll('input').forEach(inp => {
-          session[inp.name] = inp.value;
-        });
-        sessions.push(session);
-      });
-
-      var data = {
-        meta: {},
-        sessions: sessions
-      }
-      metaKeys.forEach(key => {
-        var inp = div.querySelector('input[name=' + key + ']');
-        data.meta[key] = inp.value;
-      });
-
-      localStorage.setItem(storageKey, JSON.stringify(data));
-    })
-  });
+  div.querySelectorAll('input')
+    .forEach(a => a.addEventListener('input', onChangeInput))
 }
 
 function buildThumbnails() {
@@ -260,16 +332,12 @@ function buildThumbnails() {
   images = [];
   data.sessions.forEach(a => {
     var canvas = document.createElement('canvas');
-    var img = new Image();
+    var img = fetchImage(a.image, img => {
+      doCanvas(canvas, img, a.title, a.name, a.fontSize, data.meta.title, data.meta.subTitle);
+    })
     img.addEventListener('click', event => {
       // TODO
     });
-    img.onload = function() {
-      img.originalWidth = img.width;
-      doCanvas(canvas, img, a.title, a.name, a.fontSize, data.meta.title, data.meta.subTitle);
-    }
-    img.setAttribute('crossOrigin', 'anonymous');
-    img.src = a.image;
     images.push(img);
 
     var li = document.createElement('li');
@@ -314,6 +382,17 @@ function fetchConferenceData(id) {
       localStorage.setItem(storageKey, JSON.stringify(data));
       return data;
     })
+}
+
+function fetchImage(src, callback) {
+  var img = new Image();
+  img.onload = function() {
+    img.originalWidth = img.width;
+    callback(img);
+  }
+  img.setAttribute('crossOrigin', 'anonymous');
+  img.src = src;
+  return img;
 }
 
 // main
