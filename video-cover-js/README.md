@@ -4,9 +4,16 @@
 
 ## 使い方
 
+`index.html` をオープンすれば良いので macOS ならば `open` コマンドで起動できます。
+
 ```
 $ open index.html
 ```
+
+> Google Chrome の場合は `--allow-file-access-from-files` フラグが必要です
+> ```
+> open index.html --args --allow-file-access-from-files
+> ```
 
 ![](./screen_shot.png)
 
