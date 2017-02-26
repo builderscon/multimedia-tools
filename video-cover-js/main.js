@@ -76,7 +76,7 @@ function drawMeta(ctx, name, conference, date) {
   ctx.font = "bold 60px " + fontName;
   ctx.fillText(name || 'mattn', 15, coverHeight - 150);
 
-  ctx.font = "bold 48px " + fontName;
+  ctx.font = "bold 40px " + fontName;
   ctx.fillText(conference || 'builderscon tokyo 2016', 15, coverHeight - 80);
   ctx.fillText(date || 'Dec 3, 2016', 15, coverHeight - 35);
 }
@@ -274,8 +274,8 @@ function buildThumbnails() {
     images.push(img);
 
     var li = document.createElement('li');
-    canvas.width = 960;
-    canvas.height = 540;
+    canvas.width = 640;
+    canvas.height = 360;
     li.appendChild(canvas);
     ul.appendChild(li);
   })
