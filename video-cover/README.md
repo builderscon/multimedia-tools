@@ -1,6 +1,4 @@
-# video-cover-js
-
-[video-cover](https://github.com/builderscon/multimedia-tools/tree/master/video-cover) をJavaScriptで実装してブラウザだけで完結できるように**したい**ものです。
+# video-cover
 
 ## 使い方
 
