@@ -351,36 +351,38 @@ function buildThumbnails() {
 // Other
 
 function fetchConferenceData(id) {
-  var url = 'https://api.builderscon.io/v1/session/list?conference_id=' + id + '&lang=ja';
+  var url = 'https://api.builderscon.io/v2/conference/lookup?id=' + id + '&lang=ja';
   return fetch(url)
     .then(data => data.json())
-    .then(json => {
-
-      var conf = json[0].conference
-
-      var sessions = json
-        .filter(a => a.video_url)
-        .map(a => {
-          var name = a.speaker.nickname;
-          if (a.speaker.first_name && a.speaker.last_name && a.speaker.first_name != 'Unknown' && a.speaker.last_name != 'Unknown') {
-            name = a.speaker.first_name + " " + a.speaker.last_name;
+    .then(conf => {
+      var url = 'https://api.builderscon.io/v2/session/list?conference_id=' + id + '&lang=ja';
+      return fetch(url)
+        .then(data => data.json())
+        .then(json => {
+          var sessions = json
+            .filter(a => a.video_url)
+            .map(a => {
+              var name = a.speaker.nickname;
+              if (a.speaker.first_name && a.speaker.last_name && a.speaker.first_name != 'Unknown' && a.speaker.last_name != 'Unknown') {
+                name = a.speaker.first_name + " " + a.speaker.last_name;
+              }
+              return {
+                title: a.title,
+                name: name,
+                fontSize: baseFontSize
+              }
+            })
+  
+          var data = {
+            meta: {
+              title: conf.title,
+              subTitle: conf.sub_title
+            },
+            sessions: sessions 
           }
-          return {
-            title: a.title,
-            name: name,
-            fontSize: baseFontSize
-          }
+          localStorage.setItem(storageKey, JSON.stringify(data));
+          return data;
         })
-
-      var data = {
-        meta: {
-          title: conf.title,
-          subTitle: conf.sub_title
-        },
-        sessions: sessions 
-      }
-      localStorage.setItem(storageKey, JSON.stringify(data));
-      return data;
     })
 }
 
